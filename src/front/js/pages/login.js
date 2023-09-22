@@ -1,6 +1,13 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import "../../styles/login.css"
+import {Context} from '../store/appContext'
+import { useNavigate } from "react-router-dom";
 const Login = () => {
+  const navigate = useNavigate()
+  const {store, actions} = useContext(Context)
+  useEffect(()=>{
+    store.isLogin && navigate('/')
+  })
   return (
     <div className="login-form">
       <section onSubmit={(e) => e.preventDefault}>
