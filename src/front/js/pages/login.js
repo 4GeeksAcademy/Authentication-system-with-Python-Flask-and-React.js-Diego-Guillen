@@ -1,8 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useLocalStorage } from "../hooks/hooks";
 import "../../styles/login.css"
 import {Context} from '../store/appContext'
 import { useNavigate } from "react-router-dom";
 const Login = () => {
+  const [token, setToken] = useLocalStorage('token',"")
   const navigate = useNavigate()
   const {store, actions} = useContext(Context)
   const [isShow, setIsShown] = useState(false)
