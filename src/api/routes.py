@@ -38,7 +38,7 @@ def register_user():
     db.session.commit()
     return {'message': f'User {user.email} was created'}
 
-@api.route('/token')
+@api.route('/token', methods=['POST'])
 def create_token():
     body = request.get_json()
     email = body.get('email', None)
