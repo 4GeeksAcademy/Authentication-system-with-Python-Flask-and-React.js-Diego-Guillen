@@ -21,24 +21,51 @@ def check(email):
 
 api = Blueprint('api', __name__)
 
+@api.route('/register', methods=['POST'])
+def register_user():
+    body = request.get_json()
+    name = body.get('name', None)
+    email = body.get('email', None)
+    password = body.get('password', None)
+    if name is None or email is None or password is None:
+        return {'message': 'Missing arguments'}      
+    bpassword = bytes(password, 'utf-8')
+    salt = bcrypt.gensalt(14)
+    hashed_password = bcrypt.hashpw(password=bpassword, salt=salt)       
+    user = User(name, email,hashed_password.decode('utf-8'))    
+    #return {'message': f'name: {user.name} email: {user.email} password: {password}'}
+    db.session.add(user)
+    db.session.commit()
+    return {'message': f'User {user.email} was created'}
 
 @api.route('/token')
 def create_token():
-    email = request.json.get('email', None)
-    password = request.json.get('password', None)
+    body = request.get_json()
+    email = body.get('email', None)
+    password = body.get('password', None)
     if password is None or email is None:
         return {'message': f'missing parameters {email} {password}'}, 400
     if check(email) is not True:
         return {'message': 'email is not valid'}, 400
-    user = User.query.filter_by(email=email).one_or_none()
-    print(user)
+    user = User.query.filter_by(email=email).one_or_none()    
     if user is None:
         return {'mesasge': 'User doesnt exist'}, 400
     password_byte =bytes(password, 'utf-8')
     if bcrypt.checkpw(password_byte, user.password.encode('utf-8')):
         return {'token': create_access_token(identity = email)},200
-    pass
+    return {'message': 'Unauthorized'}, 401
+       
 
+@api.route('/profile/user')
+@jwt_required()
+def validate_user():
+    email = get_jwt_identity()    
+    user = User.query.filter_by(email=email).one_or_none()
+    if user is None:
+        return {'message': 'Unauthorized'}, 401
+    return user.serialize(), 200
+    
+    
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():

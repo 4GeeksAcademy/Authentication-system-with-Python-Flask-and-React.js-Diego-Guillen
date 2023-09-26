@@ -8,9 +8,30 @@ const Login = () => {
   const navigate = useNavigate()
   const {store, actions} = useContext(Context)
   const [isShow, setIsShown] = useState(false)
+  const [user, setUser] = useState({
+    "name": "",
+    "email": "",    
+    "password": "",
+    "password_check": ""
+  })
   useEffect(()=>{
     store.isLogin && navigate('/')
   })
+const registerUser = async () => {
+  if (customer.password == customer.password_check && customer.password!="") {
+    const createUser = await actions.createUser(customer)
+    if (createUser) navigate("/")
+    else alert("An expected error occurred")
+  }
+  else {
+    alert("Password doesn't match")
+    setCustomer({...customer, password : "", password_check : ""})
+  }
+}
+const loginCustomer = () => {
+  console.log("login customer")
+}
+
   return (
     <div className="login-form">
       <section onSubmit={(e) => e.preventDefault}>
@@ -42,14 +63,15 @@ const Login = () => {
                 type="password"
                 placeholder="Repeat Password"
                 autocomplete="new-password"
+                onChange=""
               />
             </div>
             )
           }
         </div>
         <div className="action">
-          <button className={!isShow ? '' : 'selected'} onClick={() => setIsShown(!isShow) }>Register</button>
-          <button className={isShow ? '' : 'selected'} onClick={() => setIsShown(!isShow)}>Sign in</button>
+          <button className={!isShow ? '' : 'selected'} onClick={() => isShow ? registerUser() : setIsShown(!isShow) }>Register</button>
+          <button className={isShow ? '' : 'selected'} onClick={() => !isShow ? loginCustomer() : setIsShown(!isShow)}>Sign in</button>
         </div>
       </section>
     </div>
