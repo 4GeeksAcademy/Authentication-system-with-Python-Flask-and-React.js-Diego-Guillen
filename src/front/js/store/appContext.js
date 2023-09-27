@@ -31,7 +31,10 @@ const injectContext = PassedComponent => {
 			
 			//state.actions.getMessage(); // <---- calling this function from the flux.js actions
 			//console.log(localStorage.getItem("token") == '')
-			localStorage.getItem("token") && localStorage.getItem("token")=='' ? state.store.isLogin = true : state.store.isLogin = false;
+			const token = localStorage.getItem("token")
+			state.store.token = token
+			console.log(state.store.token)
+			//token && token =='' ? state.store.isLogin = true : state.store.isLogin = false;
 			
 		}, []);
 
