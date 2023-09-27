@@ -44,16 +44,16 @@ def create_token():
     email = body.get('email', None)
     password = body.get('password', None)
     if password is None or email is None:
-        return {'message': f'missing parameters {email} {password}'}, 400
+        return {'message': f'missing parameters {email} {password}', 'authorize': False}, 400
     if check(email) is not True:
-        return {'message': 'email is not valid'}, 400
+        return {'message': 'email is not valid', 'authorize': False}, 400
     user = User.query.filter_by(email=email).one_or_none()    
     if user is None:
-        return {'mesasge': 'User doesnt exist'}, 400
+        return {'mesasge': 'User doesnt exist', 'authorize': False}, 400
     password_byte =bytes(password, 'utf-8')
     if bcrypt.checkpw(password_byte, user.password.encode('utf-8')):
-        return {'token': create_access_token(identity = email)},200
-    return {'message': 'Unauthorized'}, 401
+        return {'token': create_access_token(identity = email), 'authorize': True},200
+    return {'message': 'Unauthorized', 'authorize': False}, 401
        
 
 @api.route('/profile/user')

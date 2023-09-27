@@ -3,7 +3,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 		store: {
 			message: null,
 			isLogin: false,
-			token: '',
+			token: null,
+			profile: null,
 			demo: [
 				{
 					title: "FIRST",
@@ -35,7 +36,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.log("Error loading message from backend", error)
 				}
 			},
-			getToken: async () => {
+			loginUser: async ({email, password}) => {
+				
 				try{
 					// fetching data from the backend
 					const resp = await fetch(process.env.BACKEND_URL + "/api/token",{						
@@ -46,15 +48,17 @@ const getState = ({ getStore, getActions, setStore }) => {
 							body: JSON.stringify({ email, password })						
 					})
 					const data = await resp.json()
-					setStore({ message: data.message })
+					console.log(data)
+					setStore({ token: data.token })
+					localStorage.setItem("token", JSON.stringify(data.token)) 
 					// don't forget to return something, that is how the async resolves
-					return data;
+					return data.authorize;
 				}catch(error){
 					console.log("Error loading message from backend", error)
 				}
 			},
 			getUser: async () => {
-				let store = getStore()
+				const store = getStore()
 				try {
 					const resp = await fetch(process.env.BACKEND_URL + "/api/profile/customer",
 						{
@@ -71,9 +75,28 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 
 			},
+			getUserProfile: async () =>{
+			const store = getStore()
+				try {
+					const resp = await fetch(process.env.BACKEND_URL + "/api/profile/user",
+						{
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json",
+								"Authorization": "Bearer " + store.token
+							},
+						})
+					const data = await resp.json()
+					setStore({ profile: data })
+					return true
+				} catch (error) {
+					console.log("Error loading message from backend", error)
+					return false
+				}
+			},
 			createUser: async (user) => {
 				try  {
-					const resp = await fetch(process.env.BACKEND_URL + '/api/token', {
+					const resp = await fetch(process.env.BACKEND_URL + '/api/register', {
 						method: "POST",
 							headers: {
 								"Content-Type": "application/json",
