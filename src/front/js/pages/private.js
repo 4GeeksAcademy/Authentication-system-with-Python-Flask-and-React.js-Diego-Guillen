@@ -6,34 +6,18 @@ import { useLocalStorage } from "../hooks/hooks";
 
 const Private = () => {
   const { store, actions } = useContext(Context);
-  const [token, setToken] = useLocalStorage("token", "");
   const navigate = useNavigate();
 
   useEffect(() => {
-    setToken(token, "");
-    //store.token = token
     console.log(store.token);
-    if (store.token != "") {
-      const getProfile = async () => {
-        console.log("Dentro del useEffect");
-        await actions.getUserProfile(store.token);
-        console.log(store.profile);
-      };
-      getProfile();
-    } else if (token != "") {
-      const getProfile = async () => {
-        console.log("Dentro del token storage");
-        await actions.getUserProfile(token);
-        console.log(store.profile);
-      };
-      getProfile();
-    } else navigate("/");
-  }, []);
-  //console.log(store.token)
+    !store.token && navigate("/login");
+  }, [store.token]);
+  console.log(store.profile);
 
   return (
     <>
-      {token != "" ? <Dashboard name={store?.profile?.name} /> : navigate("/")}
+      {store?.token ? <Dashboard name={store.profile?.name} /> : navigate("/")}
+      {/*navigate("/")*/}
     </>
   );
 };

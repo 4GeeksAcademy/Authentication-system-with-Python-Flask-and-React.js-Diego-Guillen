@@ -2,8 +2,7 @@ const getState = ({ getStore, getActions, setStore }) => {
   return {
     store: {
       message: null,
-      isLogin: false,
-      token: "",
+      token: localStorage.getItem("token") || null,
       profile: null,
       demo: [
         {
@@ -20,21 +19,14 @@ const getState = ({ getStore, getActions, setStore }) => {
     },
     actions: {
       // Use getActions to call a function within a fuction
-      exampleFunction: () => {
-        getActions().changeColor(0, "green");
+      getIsLogin: () => {
+        return getStore();
       },
 
-      getMessage: async () => {
-        try {
-          // fetching data from the backend
-          const resp = await fetch(process.env.BACKEND_URL + "/api/hello");
-          const data = await resp.json();
-          setStore({ message: data.message });
-          // don't forget to return something, that is how the async resolves
-          return data;
-        } catch (error) {
-          console.log("Error loading message from backend", error);
-        }
+      resetLocalStorage: () => {
+        const store = getStore();
+        localStorage.removeItem("token");
+        setStore({ ...store, token: null, profile: null });
       },
       loginUser: async ({ email, password }) => {
         try {
@@ -49,19 +41,20 @@ const getState = ({ getStore, getActions, setStore }) => {
           const data = await resp.json();
           console.log(data);
           setStore({ token: data.token });
-          localStorage.setItem("token", JSON.stringify(data.token));
+          localStorage.setItem("token", data.token);
+          getActions().getUserProfile();
           // don't forget to return something, that is how the async resolves
           return data.authorize;
         } catch (error) {
           console.log("Error loading message from backend", error);
         }
       },
-      getUser: async () => {
+      getUserProfile: async () => {
         const store = getStore();
-
+        console.log(store.token);
         try {
           const resp = await fetch(
-            process.env.BACKEND_URL + "/api/profile/customer",
+            process.env.BACKEND_URL + "/api/profile/user",
             {
               method: "GET",
               headers: {
@@ -70,29 +63,13 @@ const getState = ({ getStore, getActions, setStore }) => {
               },
             }
           );
-          const data = await resp.json();
-          setStore({ profile: data });
-        } catch (error) {
-          console.log("Error loading message from backend", error);
-        }
-      },
-      getUserProfile: async (token) => {
-        const store = getStore();		
-        console.log(token);
-        try {
-          const resp = await fetch(
-            process.env.BACKEND_URL + "/api/profile/user",
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + token,
-              },
-            }
-          );
-          const data = await resp.json();
-          setStore({ profile: data });
-          return true;
+          if (resp.status == 200) {
+            const data = await resp.json();
+            setStore({ profile: data });
+            return true;
+          }
+          console.log("expired");
+          return false;
         } catch (error) {
           console.log("Error loading message from backend", error);
           return false;
@@ -112,6 +89,10 @@ const getState = ({ getStore, getActions, setStore }) => {
         } catch (err) {
           console.log("Error sending customer to back backend", error);
         }
+      },
+      logOut: () => {
+        localStorage.removeItem("token");
+        setStore({ token: null, profile: null });
       },
     },
   };
